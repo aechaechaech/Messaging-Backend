@@ -1,6 +1,6 @@
 from flask import Flask, request
 from flask_socketio import SocketIO, emit
-import pymongo
+import pymongo, json
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret'
@@ -21,18 +21,17 @@ def get_channels():
 
     return return_data
 
-@app.route('/api/')
+@app.route('/api/send_msg', methods = ["POST"])
 def recv_msg_from_client():
-    # needs uuid, channel
+    # TODO: error handling, sanitization, different channels through different socket rooms
+    post_data = request.data.decode("utf-8")
+    post_data = json.loads(post_data)
     
-    return "H"
-
-# SOCKET.IO TESTING
-# # socket io events
-# @socketio.on('message')
-# def handle_message(data):
-#     print('received message: ' + data)
-#     socketio.send(data)
+    channel = post_data['channel']
+    user_msg = post_data['text']
+    socketio.send(user_msg)
+    
+    return {"status": True}
 
 if __name__ == '__main__':
     socketio.run(app, host='localhost', port=25565)
